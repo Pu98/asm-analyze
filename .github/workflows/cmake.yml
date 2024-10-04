@@ -1,0 +1,52 @@
+name: CMake
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: Windows
+            os: windows-latest
+            build-type: RelWithDebInfo
+            path: build\Debug\asm-analyze.exe
+            artifact-name: win
+
+          - name: MacOS
+            os: macos-latest
+            path: build/asm-analyze
+            artifact-name: macos
+
+          - name: Linux
+            os: ubuntu-latest
+            path: build/asm-analyze
+            artifact-name: linux
+
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure and Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: asm-analyze-${{ matrix.config.artifact-name }}
+          path: ${{ matrix.config.path }}
