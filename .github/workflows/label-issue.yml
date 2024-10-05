@@ -1,0 +1,43 @@
+name: Label Issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v4
+
+    - name: Auto-label issues
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const t = context.payload.issue.title.toLowerCase();
+          const b = context.payload.issue.body.toLowerCase();
+          const la = [];
+
+          const mapping = {
+            'bug': 'bug',
+            'feature': 'enhancement',
+            'urgent': 'priority: high',
+            'documentation': 'documentation'
+          };
+
+          for (const [keyword, label] of Object.entries(mapping)) {
+            if (t.includes(keyword) || b.includes(keyword)) {
+              la.push(label);
+            }
+          }
+
+          if (la.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: la
+            });
+          }

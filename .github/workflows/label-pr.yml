@@ -1,0 +1,43 @@
+name: Label Pull Requests
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v4
+
+    - name: Label pull requests
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const t = context.payload.pull_request.title.toLowerCase();
+          const b = context.payload.pull_request.body.toLowerCase();
+          const la = [];
+
+          const mapping = {
+            'bugfix': 'bug',
+            'feature': 'enhancement',
+            'urgent': 'priority: high',
+            'docs': 'documentation'
+          };
+
+          for (const [keyword, label] of Object.entries(mapping)) {
+            if (t.includes(keyword) || b.includes(keyword)) {
+              la.push(label);
+            }
+          }
+
+          if (la.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: la
+            });
+          }

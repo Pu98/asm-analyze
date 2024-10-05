@@ -1,4 +1,4 @@
-name: CMake
+name: CMake CI/CD
 
 on:
   workflow_dispatch:
@@ -17,7 +17,6 @@ jobs:
         config:
           - name: Windows
             os: windows-latest
-            build-type: RelWithDebInfo
             path: build\Debug\asm-analyze.exe
             artifact-name: win
 
@@ -35,7 +34,7 @@ jobs:
     runs-on: ${{ matrix.config.os }}
 
     steps:
-      - name: Checkout code
+      - name: Check out the repository
         uses: actions/checkout@v4
 
       - name: Configure and Build
