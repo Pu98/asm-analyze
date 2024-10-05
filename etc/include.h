@@ -5,23 +5,22 @@
 #include "dbg.hpp"
 #include <unordered_set>
 #include <algorithm>
-#include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <string>
 #include <vector>
 #include <chrono>
 #include <cctype>
 
-typedef std::string str;
+// please no
+//typedef std::string str;
 
 // function prototypes
-str analyzeLine(const str& line);
-str trim(const str& str);
-str getOperand(const str& line);
-str analyzeOperands(str& operands);
-str analyzeOperand(const str& operand, const bool appendType = false);
-str getArchitecture(const str& filename);
-bool isDirective(const str& opcode);
-bool isMemoryAddressingMode(const str& operand);
-bool isInstruction(const str& opcode);
+std::string analyzeLine(const std::string& line);
+std::string trim(const std::string& str);
+std::string getOperand(const std::string& line);
+std::string analyzeOperands(std::string& operands);
+std::string analyzeOperand(const std::string& operand, const bool appendType = false);
+std::string getArchitecture(const std::string& filename);
+bool isDirective(const std::string& opcode);
+bool isMemoryAddressingMode(const std::string& operand);
+bool isInstruction(const std::string& opcode);
