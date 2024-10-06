@@ -77,7 +77,11 @@ int main() {
     auto now = std::chrono::system_clock::now();
     std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
     struct tm localTime {};
+#ifdef _WIN32
     localtime_s(&localTime, &currentTime);
+#else
+    localtime_r(&currentTime, &localTime);
+#endif
     newFile << "; \tAnalyzed on: " << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << std::endl;
     newFile << "; \tInstruction Set Architecture: " << architecture << std::endl << std::endl;
 
