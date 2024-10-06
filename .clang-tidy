@@ -1,0 +1,9 @@
+Checks:
+
+- '-*,cppcoreguidelines-*'
+- 'readability-*'
+- 'performance-*'
+- 'portability-*'
+- 'modernize-*'
+
+WarningsAsErrors: true

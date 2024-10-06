@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
@@ -12,7 +13,7 @@ public:
     /**
      * Enumerates the available text colors.
      */
-    enum Code {
+    enum Code : std::uint8_t {
         /**
          * Red text color.
          */
@@ -47,10 +48,9 @@ public:
      * @param bold Whether to make the text bold (optional, default is false).
      * @return The colorized text string.
      */
-    static std::string colorize(const std::string& text, Code code, bool bold = false) {
+    static auto colorize(const std::string& text, Code code, bool bold = false) -> std::string {
         std::string ansiCode = "\x1B[";
-        if (bold)
-            ansiCode += "1;";
+        if (bold) { ansiCode += "1;"; }
         ansiCode += std::to_string(code) + "m";
         return ansiCode + text + "\x1B[0m";
     }

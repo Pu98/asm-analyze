@@ -1,10 +1,8 @@
 ﻿#pragma once
 
-#include <iostream>
-#include <string>
 #include "color.hpp"
+#include <iostream>
 #include <cstdlib>
-#include <limits>
 
 /**
   A namespace for debugging-related functionality.
@@ -18,7 +16,7 @@ namespace dbg {
         /**
           Enumerates the available log levels.
          */
-        enum Level {
+        enum Level : std::uint8_t {
             /**
               Informational log level.
              */
@@ -64,18 +62,10 @@ namespace dbg {
                 break;
             }
 
-            /**
-             * In file included from /home/runner/work/asm-analyze/asm-analyze/main.cpp:2:
-             * /home/runner/work/asm-analyze/asm-analyze/include/dbg.hpp: In static member function �static void dbg::Debugger::log(const string&, dbg::Debugger::Level)�:
-             * /home/runner/work/asm-analyze/asm-analyze/include/dbg.hpp:41:56: warning: �cc� may be used uninitialized in this function [-Wmaybe-uninitialized]
-             *     41 |             std::string colored = Color::colorize(l, cc);
-             *        |                                                        ^
-             */
-
             std::string colored = Color::colorize(l, cc);
 
             std::cout << "[" << colored << "] ";
-            std::cout << message << std::endl;
+            std::cout << message << '\n';
         }
 
         /**
@@ -147,27 +137,39 @@ namespace dbg {
          *
           @param message The message to log.
          */
-#define _INFO(message) dbg::Debugger::info(message)
+        template <typename T>
+        constexpr void info(const T& message) {
+            dbg::Debugger::info(message);
+        }
 
-         /**
-           Logs a warning message using the Debugger class.
-          *
-           @param message The message to log.
-          */
-#define _WARN(message) dbg::Debugger::warn(message)
+        /**
+          Logs a warning message using the Debugger class.
+         *
+          @param message The message to log.
+         */
+        template <typename T>
+        constexpr void warn(const T& message) {
+            dbg::Debugger::warn(message);
+        }
 
-          /**
-            Logs an error message using the Debugger class.
-           *
-            @param message The message to log.
-           */
-#define _ERROR(message) dbg::Debugger::error(message)
+        /**
+          Logs an error message using the Debugger class.
+         *
+          @param message The message to log.
+         */
+        template <typename T>
+        constexpr void error(const T& message) {
+            dbg::Debugger::error(message);
+        }
 
-           /**
-             Logs a fatal error message using the Debugger class.
-            *
-             @param message The message to log.
-            */
-#define _FATAL(message) dbg::Debugger::fatal(message)
+        /**
+          Logs a fatal error message using the Debugger class.
+         *
+          @param message The message to log.
+         */
+        template <typename T>
+        constexpr void fatal(const T& message) {
+            dbg::Debugger::fatal(message);
+        }
     }
 }
