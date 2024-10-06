@@ -5,6 +5,7 @@ std::unordered_set<std::string> forbidden = {
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
 };
+
 std::unordered_set<std::string> supportedExtensions = { // no .lst
     "asm", "s", "hla", "inc", "palx", "mid"
 };
@@ -13,8 +14,8 @@ const std::string VERSION = "0.1.0"; // it's better to store this as a string, r
 std::string filename;
 
 int main() {
-    // init
 #ifdef _WIN32
+    // prepare console
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD dwMode = 0;
     GetConsoleMode(hConsole, &dwMode);
@@ -22,48 +23,52 @@ int main() {
     SetConsoleMode(hConsole, dwMode);
 #endif
     std::cout << "Enter assembly file/directory (e.g. file.asm or /path/to/file.asm): ";
+    std::string filename;
     std::getline(std::cin, filename);
-    if (filename.empty() || filename.find_first_not_of(" \t\r\f\v") == std::string::npos /*broad, but okay...*/)
+    if (filename.empty() || filename.find_first_not_of(" \t\r\f\v") == std::string::npos)
         dbg::Misc::fexit("You can't do that :3");
 
-    std::string filename2 = filename; // store the old filename (it'll change) a line below
-    std::transform(filename.begin(), filename.end(), filename.begin(), ::toupper);
+    // Convert to uppercase for path checking
+    std::string ufilename = filename;
+    std::transform(ufilename.begin(), ufilename.end(), ufilename.begin(), ::toupper);
 
     size_t pos = 0;
-    while ((pos = filename.find('/')) != std::string::npos) {
-        std::string part = filename.substr(0, pos);
+    while ((pos = ufilename.find('/')) != std::string::npos) {
+        std::string part = ufilename.substr(0, pos);
         if (forbidden.contains(part))
             dbg::Misc::fexit("You can't do that :3");
-        filename.erase(0, pos + 1);
+        ufilename.erase(0, pos + 1);
     }
 
-    // remove the file extension & check whether file type is supported or not
+    // Remove the file extension & check whether file type is supported or not
     size_t dotPos = filename.find_last_of('.');
+    std::string extension;
     if (dotPos != std::string::npos) {
-        std::string extension = filename.substr(dotPos + 1);
+        extension = filename.substr(dotPos + 1);
         for (char& c : extension) c = tolower(c);
         if (!supportedExtensions.count(extension))
             dbg::Misc::fexit("You can't do that :3");
-        filename.erase(dotPos);
+        ufilename.erase(dotPos);
     }
 
-    std::string filename3 = filename;
-
-    // check the remaining part of the file name
-    if (forbidden.contains(filename))
+    // Check the remaining part of the file name
+    if (forbidden.contains(ufilename))
         dbg::Misc::fexit("You can't do that :3");
 
-    filename = filename2;
     auto begin = std::chrono::high_resolution_clock::now();
 
     std::ifstream originalFile(filename);
     if (!originalFile)
         dbg::Misc::fexit("File not found!");
 
-    std::string nfilename = filename3 + "_commented" + filename.substr(dotPos);
+    std::string nfilename = filename;
+    if (dotPos != std::string::npos)
+        nfilename.insert(dotPos, "_analyzed");
+    else
+        nfilename += "_analyzed";
     std::ofstream newFile(nfilename);
     if (!newFile)
-        dbg::Misc::fexit("Cannot open " + filename3 + "_commented" + filename.substr(dotPos) + ", exiting.");
+        dbg::Misc::fexit("Cannot open " + nfilename + ", exiting.");
 
     std::string architecture = getArchitecture(filename);
 
@@ -71,8 +76,9 @@ int main() {
     newFile << "; \tAssembly Analyzer Version: " << VERSION << std::endl;
     auto now = std::chrono::system_clock::now();
     std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
-    // main.cpp(74,53): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-    newFile << "; \tAnalyzed on: " << std::put_time(localtime(&currentTime), "%Y-%m-%d %H:%M:%S") << std::endl;
+    struct tm localTime {};
+    localtime_s(&localTime, &currentTime);
+    newFile << "; \tAnalyzed on: " << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << std::endl;
     newFile << "; \tInstruction Set Architecture: " << architecture << std::endl << std::endl;
 
     std::string line;
@@ -278,9 +284,7 @@ std::string analyzeOperands(std::string& operands) {
 }
 
 std::string analyzeOperand(const std::string& operand, const bool appendType) {
-    if (operand.empty()) {
-        return "Empty operand";
-    }
+    if (operand.empty()) return "Empty operand";
 
     // Recognized registers
     static const std::unordered_set<std::string> registers = {
@@ -295,9 +299,8 @@ std::string analyzeOperand(const std::string& operand, const bool appendType) {
     };
 
     // Check if the operand is a register
-    if (registers.count(operand)) {
+    if (registers.count(operand))
         return appendType ? operand + " (Register)" : "Register: " + operand;
-    }
 
     // Check for immediate values (numeric literals)
     if (operand[0] == '$' || std::isdigit(operand[0]) || operand == "0") {
@@ -336,7 +339,6 @@ std::string getArchitecture(const std::string& filename) {
     std::ifstream file(filename);
     if (!file)
         _ERROR("Error opening/reading " + filename + " file (is " + filename + " closed?)");
-//        return "";
 
     std::string architecture = "Unknown"; // default value is Unknown
     std::string line;
