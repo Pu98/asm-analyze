@@ -32,7 +32,7 @@ jobs:
               'LICENSE 🔐': 'license',
               'CI/CD': 'ci/cd',
               'question': 'question',
-              '?': 'question'
+              'question': '?'
               // todo: add more
             };
 
