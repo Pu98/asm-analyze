@@ -176,6 +176,8 @@ std::string analyzeLine(const std::string& line) {
             return "call instruction: called " + operand;
         } else if (opcode == "ret") {
             return "ret instruction: returned from function";
+        } else if (opcode == "nop") {
+            return "no operation";
         } else if (opcode == "cmp") {
             size_t spacePos = operands.find(' ');
             std::string destOperand = operands.substr(0, spacePos);
@@ -331,10 +333,11 @@ std::string trim(const std::string& str) {
 }
 
 bool isInstruction(const std::string& opcode) {
-    std::vector<std::string> instructions = {
+    // Recognized instructions
+    const static std::vector<std::string> instructions = {
         "int", "push", "pop", "mov", "movq", "add", "addq", "sub", "subq",
         "jmp", "call", "ret", "cmp", "je", "jne", "inc", "dec", "mul", "div",
-        "global", "len"
+        "global", "len", "nop"
     };
     return find(instructions.begin(), instructions.end(), opcode) != instructions.end();
 }
@@ -353,7 +356,8 @@ std::string getArchitecture(const std::string& filename) {
         // x86-64
         if (line.find(".code64") != std::string::npos || line.find(".x64") != std::string::npos ||
             line.find(".quad") != std::string::npos || line.find("BITS 64") != std::string::npos ||
-            line.find("__x86_64__") != std::string::npos || line.find("__amd64__") != std::string::npos) {
+            line.find("__x86_64__") != std::string::npos || line.find("__amd64__") != std::string::npos ||
+            line.find("__aarch64__") != std::string::npos) {
             architecture = "x86-64";
         }
         // x86
@@ -363,7 +367,7 @@ std::string getArchitecture(const std::string& filename) {
         }
         // ARM
         else if (line.find(".arm") != std::string::npos || line.find(".thumb") != std::string::npos ||
-            line.find("__ARM_ARCH") != std::string::npos) {
+            line.find("__ARM_ARCH") != std::string::npos || line.find("__arm__") != std::string::npos) {
             architecture = "ARM";
         }
         // MIPS
