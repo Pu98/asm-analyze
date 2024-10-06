@@ -324,9 +324,10 @@ std::string trim(const std::string& str) {
 }
 
 bool isInstruction(const std::string& opcode) {
-    std::vector<std::string> instructions = { "int", "push", "pop", "mov", "movq", "add", "addq", "sub", "subq",
-                                              "jmp", "call", "ret", "cmp", "je", "jne", "inc", "dec", "mul", "div",
-                                              "global", "len"
+    std::vector<std::string> instructions = {
+        "int", "push", "pop", "mov", "movq", "add", "addq", "sub", "subq",
+        "jmp", "call", "ret", "cmp", "je", "jne", "inc", "dec", "mul", "div",
+        "global", "len"
     };
     return find(instructions.begin(), instructions.end(), opcode) != instructions.end();
 }
